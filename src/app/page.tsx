@@ -26,38 +26,42 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion, type Variants, useAnimation, useInView } from "framer-motion"
 
-// --- Animation Variants (CORRECTED) ---
-// By adding ": Variants", we explicitly tell TypeScript what type these objects are.
+// --- Animation Variants ---
 const fadeInUp: Variants = { hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } } }
 const fadeInLeft: Variants = { hidden: { opacity: 0, x: -60 }, visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } } }
 const fadeInRight: Variants = { hidden: { opacity: 0, x: 60 }, visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } } }
 const stagger: Variants = { hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }
 
-
 // --- Reusable Animated Component ---
-function Animated({ children, variants = fadeInUp, className = "" }: { children: React.ReactNode; variants?: Variants, className?: string }) {
+function Animated({ children, variants = fadeInUp, className = "" }: { children: React.ReactNode; variants?: Variants; className?: string }) {
   const controls = useAnimation()
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: "-100px" })
-  useEffect(() => { if (inView) controls.start("visible") }, [inView, controls])
-  return <motion.div ref={ref} initial="hidden" animate={controls} variants={variants} className={className}>{children}</motion.div>
+
+  useEffect(() => {
+    if (inView) controls.start("visible")
+  }, [inView, controls])
+
+  return (
+    <motion.div ref={ref} initial="hidden" animate={controls} variants={variants} className={className}>
+      {children}
+    </motion.div>
+  )
 }
 
 // --- Main Page Component ---
 export default function HomePage() {
   const [formState, setFormState] = useState({ submitting: false, success: false, error: false })
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', suggestions: '' });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", suggestions: "" })
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [userReferralCode, setUserReferralCode] = useState<string | null>(null)
 
-  // Extract referral code from URL on component mount
+  // Extract referral code from URL
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search)
-      const refCode = urlParams.get('ref')
-      if (refCode) {
-        setReferralCode(refCode)
-      }
+      const refCode = urlParams.get("ref")
+      if (refCode) setReferralCode(refCode)
     }
   }, [])
 
@@ -66,65 +70,78 @@ export default function HomePage() {
     setFormState({ submitting: true, success: false, error: false })
 
     try {
-      const payload = {
-        ...formData,
-        ...(referralCode && { ref: referralCode })
-      }
+      const payload = { ...formData, ...(referralCode && { ref: referralCode }) }
 
       const res = await fetch("/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
-      
+
       const data = await res.json()
-      
-      if (!res.ok) {
-        throw new Error(data.error || "Signup failed")
-      }
-      
-      // Store the user's referral code for display
+      if (!res.ok) throw new Error(data.error || "Signup failed")
+
       setUserReferralCode(data.referralCode)
       setFormState({ submitting: false, success: true, error: false })
-      setFormData({ name: '', email: '', phone: '', suggestions: '' }); // Reset form
-      
+      setFormData({ name: "", email: "", phone: "", suggestions: "" })
     } catch (error) {
       console.error("Signup error:", error)
       setFormState({ submitting: false, success: false, error: true })
     }
   }
-  
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData(prev => ({...prev, [name]: value}));
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { name, value } = event.target;
-    setFormData(prev => ({...prev, [name]: value}));
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const howItWorksSteps = [
-    { icon: MessageCircle, title: "1. Chat with Our AI", description: "Start with a friendly, private chat. Our AI listens to understand what&apos;s on your mind—no judgment, no pressure. It&apos;s like a warm-up for your mind." },
-    { icon: Users, title: "2. Get Your Match", description: "Based on your chat, the AI generates a confidential report and suggests the right path—connecting you with a licensed psychiatrist or therapist who fits your needs." },
-    { icon: Calendar, title: "3. Book Your Session", description: "Easily find and book an available slot with your matched clinician. The pre-session report means you can dive right into what matters most." },
-    { icon: ClipboardList, title: "4. Receive Your Plan", description: "After your session, your clinician crafts a structured, personalized therapy plan just for you, accessible anytime in your Wellness Centre." },
-    { icon: Bot, title: "5. Stay on Track", description: "Our &apos;Engaging AI&apos; sends helpful nudges, tracks your progress, and helps you stick to your plan, making your wellness journey a collaborative effort." }
+    {
+      icon: MessageCircle,
+      title: "1. Chat with Our AI",
+      description: "Start with a friendly, private chat. Our AI listens to understand what's on your mind—no judgment, no pressure. It's like a warm-up for your mind.",
+    },
+    {
+      icon: Users,
+      title: "2. Get Your Match",
+      description: "Based on your chat, the AI generates a confidential report and suggests the right path—connecting you with a licensed psychiatrist or therapist who fits your needs.",
+    },
+    {
+      icon: Calendar,
+      title: "3. Book Your Session",
+      description: "Easily find and book an available slot with your matched clinician. The pre-session report means you can dive right into what matters most.",
+    },
+    {
+      icon: ClipboardList,
+      title: "4. Receive Your Plan",
+      description: "After your session, your clinician crafts a structured, personalized therapy plan just for you, accessible anytime in your Wellness Centre.",
+    },
+    {
+      icon: Bot,
+      title: "5. Stay on Track",
+      description: "Our 'Engaging AI' sends helpful nudges, tracks your progress, and helps you stick to your plan, making your wellness journey a collaborative effort.",
+    },
   ]
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950">
-      
-      {/* Hero Section */}
+      {/* HERO SECTION */}
       <section className="px-4 py-24 md:py-32" id="hero">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <div className="space-y-6">
               <motion.h1 className="text-5xl md:text-6xl font-serif font-bold leading-tight" variants={fadeInLeft}>
-                Mental Healthcare That&apos;s <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Actually Intelligent</span>
+                Mental Healthcare That's{" "}
+                <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Actually Intelligent</span>
               </motion.h1>
               <motion.p className="text-lg leading-relaxed tracking-wide text-slate-600 dark:text-slate-300 max-w-prose" variants={fadeInLeft}>
-                Neurona is your smart co-pilot for mental wellness. We blend expert clinicians with helpful AI to deliver care that&apos;s precise, private, and finally fits *your* brain.
+                Neurona is your smart co-pilot for mental wellness. We blend expert clinicians with helpful AI to deliver care that's precise, private,
+                and finally fits *your* brain.
               </motion.p>
               <motion.div className="flex flex-col sm:flex-row gap-4" variants={fadeInUp}>
                 <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 shadow-lg transform hover:scale-105 transition-transform">
@@ -211,14 +228,16 @@ export default function HomePage() {
         </Animated>
       </section>
       
-       {/* Launch Signup Form Section */}
+       {/* Signup Form Section */}
       <section id="join" className="px-4 py-24 bg-white dark:bg-slate-950">
         <Animated>
           <div className="max-w-lg mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold font-serif">Be the First to Experience Neurona</h2>
-            <p className="mt-4 text-slate-600 dark:text-slate-400">Join our launch list for early access, exclusive updates, and a front-row seat to the future of mental healthcare.</p>
+            <p className="mt-4 text-slate-600 dark:text-slate-400">
+              Join our launch list for early access, exclusive updates, and a front-row seat to the future of mental healthcare.
+            </p>
           </div>
-          
+
           <div className="mt-12 max-w-xl mx-auto">
             <Card className="p-8 shadow-lg dark:bg-slate-900">
               {formState.success ? (
@@ -230,13 +249,15 @@ export default function HomePage() {
                       <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-2">Your Referral Link:</p>
                       <div className="flex items-center gap-2">
                         <code className="flex-1 bg-white dark:bg-slate-800 px-3 py-2 rounded border text-sm font-mono">
-                          {typeof window !== 'undefined' ? window.location.origin : ''}?ref={userReferralCode}
+                          {typeof window !== "undefined" ? `${window.location.origin}?ref=${userReferralCode}` : ""}
                         </code>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           onClick={() => {
-                            navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
-                            alert('Referral link copied!')
+                            if (typeof window !== "undefined") {
+                              navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
+                              alert("Referral link copied!")
+                            }
                           }}
                         >
                           Copy
@@ -255,36 +276,41 @@ export default function HomePage() {
                       </p>
                     </div>
                   )}
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" name="name" type="text" placeholder="Ada Lovelace" required value={formData.name} onChange={handleInputChange} />
+                    <Input id="name" name="name" type="text" required value={formData.name} onChange={handleInputChange} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" name="email" type="email" placeholder="ada@computervision.com" required value={formData.email} onChange={handleInputChange} />
+                    <Input id="email" name="email" type="email" required value={formData.email} onChange={handleInputChange} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number (Optional)</Label>
-                    <Input id="phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" value={formData.phone} onChange={handleInputChange} />
+                    <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="suggestions">Any Suggestions? (Optional)</Label>
-                    <Textarea id="suggestions" name="suggestions" placeholder="Tell us what you'd love to see..." value={formData.suggestions} onChange={handleTextareaChange} />
+                    <Textarea id="suggestions" name="suggestions" value={formData.suggestions} onChange={handleTextareaChange} />
                   </div>
+
                   <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg" disabled={formState.submitting}>
                     {formState.submitting ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
-                    ) : "Get My Invite"}
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
+                      </>
+                    ) : (
+                      "Get My Invite"
+                    )}
                   </Button>
-                  {formState.error && <p className="text-sm text-red-500 text-center">Oops! Something went wrong. Please check your information and try again.</p>}
+
+                  {formState.error && <p className="text-sm text-red-500 text-center">Oops! Something went wrong. Please try again.</p>}
                 </form>
               )}
             </Card>
           </div>
         </Animated>
       </section>
-
     </div>
   )
 }

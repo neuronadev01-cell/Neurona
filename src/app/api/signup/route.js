@@ -12,6 +12,7 @@ import {
   increment
 } from 'firebase/firestore';
 import { sendWelcomeEmail } from '../../../lib/email';
+import { addSignupToSheet } from '../../../lib/googleSheets';
 
 // Generate a unique short referral code
 function generateReferralCode() {
@@ -140,6 +141,21 @@ export async function POST(request) {
     } catch (emailError) {
       console.error('Welcome email failed (but signup succeeded):', emailError);
       // Don't fail the signup if email fails
+    }
+
+    // Add to Google Sheets (don't block the response if sheets fails)
+    try {
+      await addSignupToSheet({
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        suggestions: userData.suggestions,
+        ref: userData.referredBy,
+        referralCode: userData.referralCode
+      });
+    } catch (sheetsError) {
+      console.error('Google Sheets sync failed (but signup succeeded):', sheetsError);
+      // Don't fail the signup if sheets sync fails
     }
 
     return NextResponse.json({ 

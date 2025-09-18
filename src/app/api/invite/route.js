@@ -9,6 +9,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { sendReferralInviteEmail } from '../../../lib/email';
+import { addInvitationToSheet } from '../../../lib/googleSheets';
 
 export async function POST(request) {
   try {
@@ -81,7 +82,7 @@ export async function POST(request) {
     }
 
     // Track the invitation
-    await addDoc(collection(db, 'invitations'), {
+    const invitationData = {
       referrerEmail: referrerEmail.toLowerCase().trim(),
       referrerName: referrer.name,
       friendName: friendName.trim(),
@@ -89,7 +90,22 @@ export async function POST(request) {
       referralCode: referralCode.toUpperCase(),
       sentAt: serverTimestamp(),
       status: 'sent' // sent, opened, signed_up
-    });
+    };
+    
+    await addDoc(collection(db, 'invitations'), invitationData);
+    
+    // Add to Google Sheets (don't block response if it fails)
+    try {
+      await addInvitationToSheet({
+        referrerEmail: referrerEmail.toLowerCase().trim(),
+        friendName: friendName.trim(),
+        friendEmail: friendEmail.toLowerCase().trim(),
+        referralCode: referralCode.toUpperCase()
+      });
+    } catch (sheetsError) {
+      console.error('Google Sheets invitation sync failed (but invite succeeded):', sheetsError);
+      // Don't fail the invite if sheets sync fails
+    }
 
     return NextResponse.json({ 
       message: 'Invitation sent successfully',

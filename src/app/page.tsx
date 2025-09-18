@@ -23,6 +23,7 @@ import {
   Loader2,
   Library,
   Share,
+  Copy,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -218,12 +219,17 @@ const howItWorksSteps = [
                 </span>
               </motion.h1>
               
-              <motion.p
-                className="text-base sm:text-lg md:text-xl leading-relaxed text-slate-600 dark:text-slate-300 max-w-prose"
+              <motion.div
+                className="space-y-4"
                 variants={fadeInLeft}
               >
-                Stop struggling with one-size-fits-all therapy. Neurona combines AI precision with human empathy to deliver personalized mental healthcare that actually works for <em>your</em> unique brain.
-              </motion.p>
+                <p className="text-base sm:text-lg md:text-xl leading-relaxed text-slate-600 dark:text-slate-300 max-w-prose">
+                  Stop struggling with one-size-fits-all therapy. Neurona combines AI precision with human empathy to deliver personalized mental healthcare that actually works for <em>your</em> unique brain.
+                </p>
+                <p className="text-base sm:text-lg leading-relaxed text-slate-500 dark:text-slate-400 max-w-prose font-medium italic">
+                  With our AI companion by your side, you can train your mind, build resilience, and unlock true inner power.
+                </p>
+              </motion.div>
               
               {/* Value props */}
               <motion.div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-6 text-sm font-medium text-slate-600 dark:text-slate-400" variants={fadeInLeft}>
@@ -391,43 +397,46 @@ const howItWorksSteps = [
                     {userReferralCode && (
                       <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-lg p-4">
                         <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-2">Your Referral Link:</p>
-                        <div className="flex items-center gap-2">
-                          <code className="flex-1 bg-white dark:bg-slate-700 px-3 py-2 rounded border dark:border-slate-600 text-sm font-mono dark:text-slate-200">
+                        <div className="space-y-2">
+                          <code className="block w-full bg-white dark:bg-slate-700 px-3 py-2 rounded border dark:border-slate-600 text-sm font-mono dark:text-slate-200 break-all">
                             {typeof window !== "undefined" ? `${window.location.origin}?ref=${userReferralCode}` : ""}
                           </code>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              if (typeof window !== "undefined") {
-                                navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
-                                alert("Referral link copied!")
-                              }
-                            }}
-                          >
-                            Copy
-                          </Button>
-                          {typeof window !== "undefined" && navigator.share && (
+                          <div className="flex items-center justify-center gap-2">
                             <Button
                               size="sm"
-                              variant="outline"
-                              onClick={async () => {
-                                try {
-                                  await navigator.share({
-                                    title: 'Join Neurona - AI-Powered Mental Healthcare',
-                                    text: '🧠 I just joined Neurona\'s early access! Get 15 days FREE of AI-powered mental healthcare. Join me:',
-                                    url: `${window.location.origin}?ref=${userReferralCode}`
-                                  })
-                                } catch {
-                                  // Fallback to copy if sharing fails
+                              className="flex-1 max-w-[120px]"
+                              onClick={() => {
+                                if (typeof window !== "undefined") {
                                   navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
-                                  alert("Link copied to clipboard!")
+                                  alert("Referral link copied!")
                                 }
                               }}
                             >
-                              <Share className="w-4 h-4 mr-1" />
-                              Share
+                              <Copy className="w-4 h-4" />
                             </Button>
-                          )}
+                            {typeof window !== "undefined" && navigator.share && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 max-w-[120px]"
+                                onClick={async () => {
+                                  try {
+                                    await navigator.share({
+                                      title: 'Join Neurona - AI-Powered Mental Healthcare',
+                                      text: '🧠 I just joined Neurona\'s early access! Get 15 days FREE of AI-powered mental healthcare. Join me:',
+                                      url: `${window.location.origin}?ref=${userReferralCode}`
+                                    })
+                                  } catch {
+                                    // Fallback to copy if sharing fails
+                                    navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
+                                    alert("Link copied to clipboard!")
+                                  }
+                                }}
+                              >
+                                <Share className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                         <p className="text-xs text-emerald-700 mt-2">Get +5 days free for each friend who joins (up to 3 friends)!</p>
                       </div>

@@ -434,7 +434,7 @@ const howItWorksSteps = [
                           <Input 
                             id="friendName" 
                             type="text" 
-                            placeholder="John Doe" 
+                            placeholder="Carlos Sainz" 
                             value={inviteForm.friendName}
                             onChange={(e) => setInviteForm(prev => ({ ...prev, friendName: e.target.value }))}
                             required
@@ -445,7 +445,7 @@ const howItWorksSteps = [
                           <Input 
                             id="friendEmail" 
                             type="email" 
-                            placeholder="john@example.com" 
+                            placeholder="Carlos@example.com" 
                             value={inviteForm.friendEmail}
                             onChange={(e) => setInviteForm(prev => ({ ...prev, friendEmail: e.target.value }))}
                             required

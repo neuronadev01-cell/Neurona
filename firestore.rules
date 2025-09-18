@@ -9,6 +9,13 @@ service cloud.firestore {
       allow delete: if false; // Never allow deletion in production
     }
     
+    // Invitations collection - for referral tracking
+    match /invitations/{inviteId} {
+      allow read, create: if true;
+      allow update: if true; // For status updates when someone signs up
+      allow delete: if false;
+    }
+    
     // Test collection - for Firebase connectivity testing
     match /test/{testId} {
       allow read, create: if true;

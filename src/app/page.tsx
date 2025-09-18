@@ -19,21 +19,39 @@ import {
   Calendar,
   ClipboardList,
   Bot,
-  MessageSquare, // For WhatsApp
-  Loader2, // For loading spinner
+  MessageSquare,
+  Loader2,
+  Library,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, type Variants, useAnimation, useInView } from "framer-motion"
 
 // --- Animation Variants ---
-const fadeInUp: Variants = { hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } } }
-const fadeInLeft: Variants = { hidden: { opacity: 0, x: -60 }, visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } } }
-const fadeInRight: Variants = { hidden: { opacity: 0, x: 60 }, visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } } }
+const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+}
+const fadeInLeft: Variants = {
+  hidden: { opacity: 0, x: -60 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } },
+}
+const fadeInRight: Variants = {
+  hidden: { opacity: 0, x: 60 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } },
+}
 const stagger: Variants = { hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }
 
 // --- Reusable Animated Component ---
-function Animated({ children, variants = fadeInUp, className = "" }: { children: React.ReactNode; variants?: Variants; className?: string }) {
+function Animated({
+  children,
+  variants = fadeInUp,
+  className = "",
+}: {
+  children: React.ReactNode
+  variants?: Variants
+  className?: string
+}) {
   const controls = useAnimation()
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: "-100px" })
@@ -55,8 +73,12 @@ export default function HomePage() {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", suggestions: "" })
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [userReferralCode, setUserReferralCode] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [inviteForm, setInviteForm] = useState({ friendName: '', friendEmail: '' })
+  const [inviteLoading, setInviteLoading] = useState(false)
+  const [inviteSuccess, setInviteSuccess] = useState('')
+  const [inviteError, setInviteError] = useState('')
 
-  // Extract referral code from URL
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search)
@@ -71,17 +93,16 @@ export default function HomePage() {
 
     try {
       const payload = { ...formData, ...(referralCode && { ref: referralCode }) }
-
       const res = await fetch("/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
-
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Signup failed")
 
       setUserReferralCode(data.referralCode)
+      setUserEmail(formData.email)
       setFormState({ submitting: false, success: true, error: false })
       setFormData({ name: "", email: "", phone: "", suggestions: "" })
     } catch (error) {
@@ -100,54 +121,133 @@ export default function HomePage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const howItWorksSteps = [
-    {
-      icon: MessageCircle,
-      title: "1. Chat with Our AI",
-      description: "Start with a friendly, private chat. Our AI listens to understand what's on your mind—no judgment, no pressure. It's like a warm-up for your mind.",
-    },
-    {
-      icon: Users,
-      title: "2. Get Your Match",
-      description: "Based on your chat, the AI generates a confidential report and suggests the right path—connecting you with a licensed psychiatrist or therapist who fits your needs.",
-    },
-    {
-      icon: Calendar,
-      title: "3. Book Your Session",
-      description: "Easily find and book an available slot with your matched clinician. The pre-session report means you can dive right into what matters most.",
-    },
-    {
-      icon: ClipboardList,
-      title: "4. Receive Your Plan",
-      description: "After your session, your clinician crafts a structured, personalized therapy plan just for you, accessible anytime in your Wellness Centre.",
-    },
-    {
-      icon: Bot,
-      title: "5. Stay on Track",
-      description: "Our 'Engaging AI' sends helpful nudges, tracks your progress, and helps you stick to your plan, making your wellness journey a collaborative effort.",
-    },
-  ]
+  const handleInviteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setInviteLoading(true)
+    setInviteError('')
+    setInviteSuccess('')
+
+    try {
+      const res = await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          referrerEmail: userEmail,
+          friendName: inviteForm.friendName,
+          friendEmail: inviteForm.friendEmail,
+          referralCode: userReferralCode
+        })
+      })
+
+      const data = await res.json()
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to send invitation')
+      }
+
+      setInviteSuccess(`Invitation sent successfully to ${data.friendEmail}!`)
+      setInviteForm({ friendName: '', friendEmail: '' })
+      
+    } catch (error) {
+      console.error('Invite error:', error)
+      setInviteError(error instanceof Error ? error.message : 'Failed to send invitation')
+    } finally {
+      setInviteLoading(false)
+    }
+  }
+
+const howItWorksSteps = [
+  {
+    icon: MessageCircle,
+    title: "1. Begin Your AI Intake",
+    description:
+      "Start with a private conversation with our AI. It carefully listens to your concerns and generates a confidential report—helping you feel understood from the very first step.",
+  },
+  {
+    icon: Users,
+    title: "2. Get Matched with the Right Expert",
+    description:
+      "Based on your intake, Neurona recommends whether a psychiatrist or therapist is the best fit, and connects you with verified, licensed professionals who suit your needs.",
+  },
+  {
+    icon: Calendar,
+    title: "3. Book Your Session with Ease",
+    description:
+      "Browse real-time availability and book a session in just a few clicks. Your clinician receives your AI-generated report in advance, so you can dive straight into what matters most.",
+  },
+  {
+    icon: Library,
+    title: "4. Explore Your Wellness Centre",
+    description:
+      "Access a curated library of evidence-based tools—guided meditations, games, music, exercises, and more—personalized by your clinician to support your mental well-being every day.",
+  },
+  {
+    icon: ClipboardList,
+    title: "5. Receive a Personalized Therapy Plan",
+    description:
+      "After your consultation, your clinician creates a structured, tailored therapy plan—securely stored in your Wellness Centre for continuous guidance and growth.",
+  },
+  {
+    icon: Bot,
+    title: "6. Stay Engaged with Our AI Companion",
+    description:
+      "Neurona’s Engaging AI keeps you on track with gentle nudges, progress tracking, and motivational support—turning therapy into a guided, collaborative journey.",
+  },
+];
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950">
       {/* HERO SECTION */}
-      <section className="px-4 py-24 md:py-32" id="hero">
+      <section className="px-4 py-24 md:py-32 bg-gradient-to-br from-white via-emerald-50/20 to-blue-50/20 dark:from-slate-900 dark:via-emerald-900/10 dark:to-blue-900/10" id="hero">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <div className="space-y-6">
+              {/* Social proof badge */}
+              <motion.div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 px-4 py-2 rounded-full text-sm font-medium text-emerald-700 dark:text-emerald-300" variants={fadeInLeft}>
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                🔥 Join 100+ early adopters in the waitlist
+              </motion.div>
+              
               <motion.h1 className="text-5xl md:text-6xl font-serif font-bold leading-tight" variants={fadeInLeft}>
-                Mental Healthcare That's{" "}
-                <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Actually Intelligent</span>
+                Mental Healthcare That&apos;s{" "}
+                <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                  Actually Intelligent
+                </span>
               </motion.h1>
-              <motion.p className="text-lg leading-relaxed tracking-wide text-slate-600 dark:text-slate-300 max-w-prose" variants={fadeInLeft}>
-                Neurona is your smart co-pilot for mental wellness. We blend expert clinicians with helpful AI to deliver care that's precise, private,
-                and finally fits *your* brain.
+              
+              <motion.p
+                className="text-xl leading-relaxed text-slate-600 dark:text-slate-300 max-w-prose"
+                variants={fadeInLeft}
+              >
+                Stop struggling with one-size-fits-all therapy. Neurona combines AI precision with human empathy to deliver personalized mental healthcare that actually works for <em>your</em> unique brain.
               </motion.p>
+              
+              {/* Value props */}
+              <motion.div className="flex flex-wrap gap-6 text-sm font-medium text-slate-600 dark:text-slate-400" variants={fadeInLeft}>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                  AI-powered matching
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                  Licensed professionals
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                  Privacy-first design
+                </div>
+              </motion.div>
+              
               <motion.div className="flex flex-col sm:flex-row gap-4" variants={fadeInUp}>
-                <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 shadow-lg transform hover:scale-105 transition-transform">
-                  <Link href="#join">Get Early Access</Link>
+                <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200 text-base px-8">
+                  <Link href="#join">
+                    Get Early Access
+                    <span className="ml-2">→</span>
+                  </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="transform hover:scale-105 transition-transform">
+                <Button asChild size="lg" variant="outline" className="transform hover:scale-105 transition-all duration-200 text-base">
                   <Link href="#how-it-works">See How It Works</Link>
                 </Button>
               </motion.div>
@@ -213,14 +313,28 @@ export default function HomePage() {
                   <h2 className="text-3xl font-bold font-serif mb-3">Join the Conversation</h2>
                   <p className="text-slate-600 dark:text-slate-300 mb-6">Connect with others on a similar journey in our private, supportive WhatsApp community. Share, listen, and grow together.</p>
                   <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 shadow-lg transform hover:scale-105 transition-transform">
-                    {/* --- IMPORTANT: Add your WhatsApp group link here --- */}
-                    <a href="https://wa.me/YOUR_GROUP_LINK_HERE" target="_blank" rel="noopener noreferrer">
+                    <a href="https://whatsapp.com/channel/0029Vb6IasIGpLHT5uZyHa2L" target="_blank" rel="noopener noreferrer">
                       <MessageSquare className="mr-2 h-5 w-5" /> Join on WhatsApp
                     </a>
                   </Button>
                 </div>
                 <div className="hidden md:flex items-center justify-center p-8 bg-emerald-100 dark:bg-emerald-900/50 h-full">
-                  <MessageSquare className="w-24 h-24 text-emerald-500 opacity-50"/>
+                  <div className="w-full max-w-[150px] aspect-square flex items-center justify-center">
+                    <Image 
+                      src="/logo1.png" 
+                      alt="Neurona Logo" 
+                      width={150} 
+                      height={150} 
+                      className="dark:hidden opacity-60 w-full h-full object-contain"
+                    />
+                    <Image 
+                      src="/logo2.png" 
+                      alt="Neurona Logo" 
+                      width={150} 
+                      height={150} 
+                      className="hidden dark:block opacity-60 w-full h-full object-contain"
+                    />
+                  </div>
                 </div>
               </div>
             </Card>
@@ -229,49 +343,142 @@ export default function HomePage() {
       </section>
       
        {/* Signup Form Section */}
-      <section id="join" className="px-4 py-24 bg-white dark:bg-slate-950">
-        <Animated>
-          <div className="max-w-lg mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold font-serif">Be the First to Experience Neurona</h2>
-            <p className="mt-4 text-slate-600 dark:text-slate-400">
-              Join our launch list for early access, exclusive updates, and a front-row seat to the future of mental healthcare.
-            </p>
+      <section id="join" className="px-4 py-24 bg-gradient-to-br from-emerald-900 via-slate-900 to-blue-900 text-white relative overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-blue-500/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+        
+        <Animated className="relative">
+          <div className="max-w-xl mx-auto text-center">
+            {/* Early access badge */}
+            <div className="inline-flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 px-4 py-2 rounded-full text-sm font-medium text-emerald-300 mb-6">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+              🚀 Limited Early Access
+            </div>
+            
+            <h2 className="text-4xl md:text-5xl font-bold font-serif mb-6">
+              Ready to Transform Your Mental Health Journey?
+            </h2>
+            <div className="space-y-4 mb-8">
+              <p className="text-xl text-slate-200 leading-relaxed">
+                Join the waitlist for exclusive early access to Neurona - where AI precision meets human empathy.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-slate-300">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                  Skip the traditional therapy wait times
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                  Get matched with the perfect clinician
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                  Access cutting-edge wellness tools
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-12 max-w-xl mx-auto">
-            <Card className="p-8 shadow-lg dark:bg-slate-900">
+          <div className="mt-8 max-w-xl mx-auto relative">
+            <Card className="p-8 bg-white/98 dark:bg-slate-800/98 backdrop-blur-sm border-0 shadow-2xl">
               {formState.success ? (
-                <div className="text-center space-y-4">
-                  <h3 className="text-xl font-semibold text-emerald-600">🎉 Welcome to Neurona!</h3>
-                  <p className="text-slate-600 dark:text-slate-300">You're officially on the list! Check your email for a welcome message.</p>
-                  {userReferralCode && (
-                    <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-lg p-4">
-                      <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-2">Your Referral Link:</p>
-                      <div className="flex items-center gap-2">
-                        <code className="flex-1 bg-white dark:bg-slate-800 px-3 py-2 rounded border text-sm font-mono">
-                          {typeof window !== "undefined" ? `${window.location.origin}?ref=${userReferralCode}` : ""}
-                        </code>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            if (typeof window !== "undefined") {
-                              navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
-                              alert("Referral link copied!")
-                            }
-                          }}
-                        >
-                          Copy
-                        </Button>
+                <div className="space-y-6">
+                  <div className="text-center space-y-4">
+                    <h3 className="text-xl font-semibold text-emerald-600">🎉 Welcome to Neurona!</h3>
+                    <p className="text-slate-700 dark:text-slate-300">You're officially on the list! Check your email for a welcome message from Nova.</p>
+                    {userReferralCode && (
+                      <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-lg p-4">
+                        <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-2">Your Referral Link:</p>
+                        <div className="flex items-center gap-2">
+                          <code className="flex-1 bg-white dark:bg-slate-700 px-3 py-2 rounded border dark:border-slate-600 text-sm font-mono dark:text-slate-200">
+                            {typeof window !== "undefined" ? `${window.location.origin}?ref=${userReferralCode}` : ""}
+                          </code>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              if (typeof window !== "undefined") {
+                                navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
+                                alert("Referral link copied!")
+                              }
+                            }}
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                        <p className="text-xs text-emerald-700 mt-2">Get +5 days free for each friend who joins (up to 3 friends)!</p>
                       </div>
-                      <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-2">Share this link with friends to earn referral points!</p>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  
+                  {/* Invite Friends Form */}
+                  <div className="border-t pt-6">
+                    <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 text-center">✨ Invite a Friend & Get +5 Days Free</h4>
+                    
+                    {inviteSuccess && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                        <p className="text-green-800 text-sm text-center">{inviteSuccess}</p>
+                      </div>
+                    )}
+                    
+                    {inviteError && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                        <p className="text-red-800 text-sm text-center">{inviteError}</p>
+                      </div>
+                    )}
+                    
+                    <form onSubmit={handleInviteSubmit} className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="friendName">Friend's Name</Label>
+                          <Input 
+                            id="friendName" 
+                            type="text" 
+                            placeholder="John Doe" 
+                            value={inviteForm.friendName}
+                            onChange={(e) => setInviteForm(prev => ({ ...prev, friendName: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="friendEmail">Friend's Email</Label>
+                          <Input 
+                            id="friendEmail" 
+                            type="email" 
+                            placeholder="john@example.com" 
+                            value={inviteForm.friendEmail}
+                            onChange={(e) => setInviteForm(prev => ({ ...prev, friendEmail: e.target.value }))}
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-blue-600 hover:bg-blue-700" 
+                        disabled={inviteLoading}
+                      >
+                        {inviteLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Sending Invitation...
+                          </>
+                        ) : (
+                          "Send Invitation 🚀"
+                        )}
+                      </Button>
+                    </form>
+                    
+                    <p className="text-xs text-slate-500 text-center mt-3">
+                      Your friend will receive a personalized email with 15 days free access!
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={handleFormSubmit} className="space-y-6">
                   {referralCode && (
-                    <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-lg p-3 text-center">
-                      <p className="text-emerald-700 dark:text-emerald-300 text-sm">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+                      <p className="text-emerald-800 text-sm">
                         🎉 You were referred by: <strong>{referralCode}</strong>
                       </p>
                     </div>

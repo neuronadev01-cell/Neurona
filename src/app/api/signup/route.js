@@ -105,6 +105,23 @@ export async function POST(request) {
         await updateDoc(doc(db, 'users', referrerDoc.id), {
           referralCount: increment(1)
         });
+        
+        // Update invitation status if this was from an invitation
+        const invitationQuery = query(
+          collection(db, 'invitations'),
+          where('friendEmail', '==', email.toLowerCase().trim()),
+          where('referralCode', '==', ref.trim().toUpperCase()),
+          where('status', '==', 'sent')
+        );
+        const invitationSnapshot = await getDocs(invitationQuery);
+        
+        if (!invitationSnapshot.empty) {
+          const invitationDoc = invitationSnapshot.docs[0];
+          await updateDoc(doc(db, 'invitations', invitationDoc.id), {
+            status: 'signed_up',
+            signedUpAt: serverTimestamp()
+          });
+        }
       }
       // Note: If referral code is invalid, we still proceed with signup
       // but don't set referredBy (graceful degradation)

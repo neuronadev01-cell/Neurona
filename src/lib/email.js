@@ -104,7 +104,10 @@ export async function sendWelcomeEmail({ name, email, referralCode }) {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">🧠 Neurona</div>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px;">
+                <img src="${currentDomain}/logo4.png" alt="Neurona Logo" width="40" height="40" style="display: block;" />
+                <div class="logo">Neurona</div>
+              </div>
             </div>
             
             <div class="content">
@@ -210,7 +213,7 @@ export async function sendReferralInviteEmail({ friendName, friendEmail, referre
     const { data, error } = await resend.emails.send({
       from: process.env.FROM_EMAIL || 'nova@neurona.ai',
       to: [friendEmail],
-      subject: `🎉 ${referrerName} just invited you to Neurona!`,
+      subject: `${referrerName} invited you to Neurona — claim your free 15 days`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -220,123 +223,75 @@ export async function sendReferralInviteEmail({ friendName, friendEmail, referre
           <title>You're Invited to Neurona</title>
           <style>
             body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              font-family: Arial, sans-serif;
               line-height: 1.6;
               color: #333;
               max-width: 600px;
               margin: 0 auto;
               padding: 20px;
-              background-color: #f8fafc;
+              background-color: #f9fafb;
             }
             .container {
               background-color: white;
-              border-radius: 12px;
-              padding: 40px;
-              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+              border-radius: 10px;
+              padding: 28px;
+              border: 1px solid #e5e7eb;
             }
             .header {
               text-align: center;
-              margin-bottom: 32px;
+              margin-bottom: 24px;
             }
             .logo {
-              font-size: 32px;
+              font-size: 24px;
               font-weight: bold;
               color: #059669;
-              margin-bottom: 8px;
             }
-            .benefits-list {
-              background-color: #ecfdf5;
-              border-radius: 8px;
-              padding: 20px;
-              margin: 24px 0;
-            }
-            .benefit-item {
-              display: flex;
-              align-items: flex-start;
-              margin: 12px 0;
-              font-size: 16px;
-              color: #065f46;
-            }
-            .benefit-emoji {
-              margin-right: 12px;
-              font-size: 18px;
-              line-height: 1;
-            }
-            .cta-button {
+            .cta-link {
               display: inline-block;
-              background-color: #059669;
+              margin: 20px 0;
+              padding: 12px 20px;
+              background: #059669;
               color: white;
+              border-radius: 6px;
               text-decoration: none;
-              padding: 16px 32px;
-              border-radius: 8px;
               font-weight: 600;
-              font-size: 18px;
-              margin: 24px 0;
-            }
-            .bonus-section {
-              background-color: #fef3c7;
-              border-radius: 8px;
-              padding: 20px;
-              margin: 24px 0;
-              text-align: center;
             }
             .footer {
-              text-align: center;
-              color: #6b7280;
+              margin-top: 28px;
               font-size: 14px;
-              margin-top: 32px;
-              padding-top: 24px;
-              border-top: 1px solid #e5e7eb;
+              color: #6b7280;
+              text-align: center;
             }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">🧠 Neurona</div>
+              <img src="${currentDomain}/logo4.png" alt="Neurona Logo" width="40" height="40" />
+              <div class="logo">Neurona</div>
             </div>
             
-            <div class="content">
-              <p>Hi <strong>${friendName}</strong>,</p>
-              
-              <p>Your friend <strong>${referrerName}</strong> thought you'd love this — and gave you <strong>15 days of free early access</strong> to Neurona. 🌟</p>
-              
-              <p><strong>Here's what's waiting for you:</strong></p>
-              
-              <div class="benefits-list">
-                <div class="benefit-item">
-                  <span class="benefit-emoji">🆓</span>
-                  <span><strong>15 days free</strong> — including mental health screening + 1 therapy session.</span>
-                </div>
-                <div class="benefit-item">
-                  <span class="benefit-emoji">👨‍⚕️</span>
-                  <span><strong>Access to qualified</strong> psychiatrists & therapists across India.</span>
-                </div>
-                <div class="benefit-item">
-                  <span class="benefit-emoji">🤖</span>
-                  <span><strong>An AI companion</strong> that keeps you engaged & motivated.</span>
-                </div>
-                <div class="benefit-item">
-                  <span class="benefit-emoji">📅</span>
-                  <span><strong>A structured, personalised therapy roadmap</strong> no one else offers.</span>
-                </div>
-              </div>
-              
-              <div class="bonus-section">
-                <p><strong>💡 Bonus:</strong> Invite your own friends! Each successful invite gives you <strong>+5 extra days free</strong> (up to 3 invites = +15 days).</p>
-              </div>
-              
-              <div style="text-align: center;">
-                <p><strong>👉 Accept your invite now and start your journey toward mental strength:</strong></p>
-                <a href="${signupLink}" class="cta-button">Claim Your Free 15 Days</a>
-              </div>
+            <p>Hi <strong>${friendName}</strong>,</p>
+            
+            <p>Your friend <strong>${referrerName}</strong> just invited you to try <strong>Neurona</strong> — and gave you <strong>15 days of free early access</strong> to get started.</p>
+            
+            <p>With Neurona, you’ll be able to:</p>
+            <ul>
+              <li>Get a free mental health screening + 1 therapy session</li>
+              <li>Access qualified psychiatrists & therapists across India</li>
+              <li>Use an AI companion to keep you consistent & motivated</li>
+              <li>Follow a structured, personalised therapy roadmap</li>
+            </ul>
+            
+            <div style="text-align:center;">
+              <a href="${signupLink}" class="cta-link">Claim Your Free 15 Days</a>
             </div>
+            
+            <p>P.S. Inviting your own friends gives you +5 days extra each (up to +15 days).</p>
             
             <div class="footer">
-              <p>
-                Warmly,<br>
-                <strong>Team Neurona</strong>
-              </p>
+              <p>If you have questions, just hit reply — we read every message.</p>
+              <p>— Team Neurona</p>
             </div>
           </div>
         </body>
@@ -345,20 +300,21 @@ export async function sendReferralInviteEmail({ friendName, friendEmail, referre
       text: `
         Hi ${friendName},
 
-        Your friend ${referrerName} thought you'd love this — and gave you 15 days of free early access to Neurona. 🌟
+        Your friend ${referrerName} just invited you to Neurona and gave you 15 days of free early access.
 
-        Here's what's waiting for you:
-        🆓 15 days free — including mental health screening + 1 therapy session.
-        👨‍⚕️ Access to qualified psychiatrists & therapists across India.
-        🤖 An AI companion that keeps you engaged & motivated.
-        📅 A structured, personalised therapy roadmap no one else offers.
+        With Neurona, you get:
+        - Free mental health screening + 1 therapy session
+        - Access to psychiatrists & therapists across India
+        - An AI companion to stay consistent & motivated
+        - A structured therapy roadmap
 
-        💡 Bonus: Invite your own friends! Each successful invite gives you +5 extra days free (up to 3 invites = +15 days).
+        Claim your free access here: ${signupLink}
 
-        👉 Accept your invite now: ${signupLink}
+        P.S. Invite friends yourself and earn +5 days extra per friend (up to +15 days).
 
-        Warmly,
-        Team Neurona
+        If you have questions, just reply to this email — we read every message.
+        
+        — Team Neurona
       `
     });
 

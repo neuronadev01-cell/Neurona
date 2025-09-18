@@ -22,6 +22,7 @@ import {
   MessageSquare,
   Loader2,
   Library,
+  Share,
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -200,7 +201,7 @@ const howItWorksSteps = [
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950">
       {/* HERO SECTION */}
-      <section className="px-4 py-24 md:py-32 bg-gradient-to-br from-white via-emerald-50/20 to-blue-50/20 dark:from-slate-900 dark:via-emerald-900/10 dark:to-blue-900/10" id="hero">
+      <section className="px-4 py-16 sm:py-20 md:py-24 lg:py-32 bg-gradient-to-br from-white via-emerald-50/20 to-blue-50/20 dark:from-slate-900 dark:via-emerald-900/10 dark:to-blue-900/10" id="hero">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <div className="space-y-6">
@@ -210,7 +211,7 @@ const howItWorksSteps = [
                 🔥 Join 100+ early adopters in the waitlist
               </motion.div>
               
-              <motion.h1 className="text-5xl md:text-6xl font-serif font-bold leading-tight" variants={fadeInLeft}>
+              <motion.h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight" variants={fadeInLeft}>
                 Mental Healthcare That&apos;s{" "}
                 <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
                   Actually Intelligent
@@ -218,14 +219,14 @@ const howItWorksSteps = [
               </motion.h1>
               
               <motion.p
-                className="text-xl leading-relaxed text-slate-600 dark:text-slate-300 max-w-prose"
+                className="text-base sm:text-lg md:text-xl leading-relaxed text-slate-600 dark:text-slate-300 max-w-prose"
                 variants={fadeInLeft}
               >
                 Stop struggling with one-size-fits-all therapy. Neurona combines AI precision with human empathy to deliver personalized mental healthcare that actually works for <em>your</em> unique brain.
               </motion.p>
               
               {/* Value props */}
-              <motion.div className="flex flex-wrap gap-6 text-sm font-medium text-slate-600 dark:text-slate-400" variants={fadeInLeft}>
+              <motion.div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-6 text-sm font-medium text-slate-600 dark:text-slate-400" variants={fadeInLeft}>
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
                   AI-powered matching
@@ -240,14 +241,14 @@ const howItWorksSteps = [
                 </div>
               </motion.div>
               
-              <motion.div className="flex flex-col sm:flex-row gap-4" variants={fadeInUp}>
-                <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200 text-base px-8">
+              <motion.div className="flex flex-col sm:flex-row gap-3 sm:gap-4" variants={fadeInUp}>
+                <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200 text-sm sm:text-base px-6 sm:px-8 w-full sm:w-auto">
                   <Link href="#join">
                     Get Early Access
                     <span className="ml-2">→</span>
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="transform hover:scale-105 transition-all duration-200 text-base">
+                <Button asChild size="lg" variant="outline" className="transform hover:scale-105 transition-all duration-200 text-sm sm:text-base w-full sm:w-auto">
                   <Link href="#how-it-works">See How It Works</Link>
                 </Button>
               </motion.div>
@@ -343,7 +344,7 @@ const howItWorksSteps = [
       </section>
       
        {/* Signup Form Section */}
-      <section id="join" className="px-4 py-24 bg-gradient-to-br from-emerald-900 via-slate-900 to-blue-900 text-white relative overflow-hidden">
+      <section id="join" className="px-4 py-16 sm:py-20 md:py-24 bg-gradient-to-br from-emerald-900 via-slate-900 to-blue-900 text-white relative overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-blue-500/20"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -356,14 +357,14 @@ const howItWorksSteps = [
               🚀 Limited Early Access
             </div>
             
-            <h2 className="text-4xl md:text-5xl font-bold font-serif mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-serif mb-6">
               Ready to Transform Your Mental Health Journey?
             </h2>
             <div className="space-y-4 mb-8">
-              <p className="text-xl text-slate-200 leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed">
                 Join the waitlist for exclusive early access to Neurona - where AI precision meets human empathy.
               </p>
-              <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-slate-300">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3 sm:gap-4 text-sm font-medium text-slate-300">
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
                   Skip the traditional therapy wait times
@@ -405,6 +406,28 @@ const howItWorksSteps = [
                           >
                             Copy
                           </Button>
+                          {typeof window !== "undefined" && navigator.share && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => {
+                                try {
+                                  await navigator.share({
+                                    title: 'Join Neurona - AI-Powered Mental Healthcare',
+                                    text: '🧠 I just joined Neurona\'s early access! Get 15 days FREE of AI-powered mental healthcare. Join me:',
+                                    url: `${window.location.origin}?ref=${userReferralCode}`
+                                  })
+                                } catch {
+                                  // Fallback to copy if sharing fails
+                                  navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
+                                  alert("Link copied to clipboard!")
+                                }
+                              }}
+                            >
+                              <Share className="w-4 h-4 mr-1" />
+                              Share
+                            </Button>
+                          )}
                         </div>
                         <p className="text-xs text-emerald-700 mt-2">Get +5 days free for each friend who joins (up to 3 friends)!</p>
                       </div>

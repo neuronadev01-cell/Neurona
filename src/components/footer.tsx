@@ -8,10 +8,10 @@ export default function Footer() {
       <div className="absolute inset-0 bg-gradient-to-br from-[#004652] to-[#003240] opacity-90"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-400/10 via-transparent to-transparent"></div>
       
-      <div className="relative max-w-7xl mx-auto px-6 py-16">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        <div className="grid gap-8 sm:gap-12 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand section */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="sm:col-span-2 lg:col-span-2 space-y-4 sm:space-y-6">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{backgroundColor: '#004652'}}>
                 <Image 
@@ -58,7 +58,7 @@ export default function Footer() {
               <p className="text-sm text-slate-400">Join our growing community of mental health advocates.</p>
               <div className="space-y-2">
                 <a 
-                  href="https://wa.me/YOUR_GROUP_LINK" 
+                  href="https://whatsapp.com/channel/0029Vb6IasIGpLHT5uZyHa2L" 
                   target="_blank" 
                   rel="noreferrer" 
                   className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"

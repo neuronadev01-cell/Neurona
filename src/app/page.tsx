@@ -1,4 +1,5 @@
 "use client"
+/* eslint-disable react/no-unescaped-entities */
 
 import React, { useEffect, useRef, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
@@ -46,34 +47,49 @@ function Animated({ children, variants = fadeInUp, className = "" }: { children:
 export default function HomePage() {
   const [formState, setFormState] = useState({ submitting: false, success: false, error: false })
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', suggestions: '' });
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+  const [userReferralCode, setUserReferralCode] = useState<string | null>(null)
+
+  // Extract referral code from URL on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const refCode = urlParams.get('ref')
+      if (refCode) {
+        setReferralCode(refCode)
+      }
+    }
+  }, [])
 
   const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setFormState({ submitting: true, success: false, error: false })
 
-    // --- IMPORTANT: Paste your Google Apps Script URL here ---
-    const googleScriptUrl = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE"
-    
-    if (googleScriptUrl === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
-        console.error("ERROR: Please replace 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE' with your actual script URL.");
-        setFormState({ submitting: false, success: false, error: true });
-        return;
-    }
-
     try {
-      await fetch(googleScriptUrl, {
+      const payload = {
+        ...formData,
+        ...(referralCode && { ref: referralCode })
+      }
+
+      const res = await fetch("/api/signup", {
         method: "POST",
-        mode: 'no-cors', // Important for this type of request
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       })
       
+      const data = await res.json()
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Signup failed")
+      }
+      
+      // Store the user's referral code for display
+      setUserReferralCode(data.referralCode)
       setFormState({ submitting: false, success: true, error: false })
       setFormData({ name: '', email: '', phone: '', suggestions: '' }); // Reset form
+      
     } catch (error) {
-      console.error("Form submission error:", error)
+      console.error("Signup error:", error)
       setFormState({ submitting: false, success: false, error: true })
     }
   }
@@ -89,11 +105,11 @@ export default function HomePage() {
   }
 
   const howItWorksSteps = [
-    { icon: MessageCircle, title: "1. Chat with Our AI", description: "Start with a friendly, private chat. Our AI listens to understand what's on your mind—no judgment, no pressure. It's like a warm-up for your mind." },
+    { icon: MessageCircle, title: "1. Chat with Our AI", description: "Start with a friendly, private chat. Our AI listens to understand what&apos;s on your mind—no judgment, no pressure. It&apos;s like a warm-up for your mind." },
     { icon: Users, title: "2. Get Your Match", description: "Based on your chat, the AI generates a confidential report and suggests the right path—connecting you with a licensed psychiatrist or therapist who fits your needs." },
     { icon: Calendar, title: "3. Book Your Session", description: "Easily find and book an available slot with your matched clinician. The pre-session report means you can dive right into what matters most." },
     { icon: ClipboardList, title: "4. Receive Your Plan", description: "After your session, your clinician crafts a structured, personalized therapy plan just for you, accessible anytime in your Wellness Centre." },
-    { icon: Bot, title: "5. Stay on Track", description: "Our 'Engaging AI' sends helpful nudges, tracks your progress, and helps you stick to your plan, making your wellness journey a collaborative effort." }
+    { icon: Bot, title: "5. Stay on Track", description: "Our &apos;Engaging AI&apos; sends helpful nudges, tracks your progress, and helps you stick to your plan, making your wellness journey a collaborative effort." }
   ]
   
   return (
@@ -105,10 +121,10 @@ export default function HomePage() {
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <div className="space-y-6">
               <motion.h1 className="text-5xl md:text-6xl font-serif font-bold leading-tight" variants={fadeInLeft}>
-                Mental Healthcare That's <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Actually Intelligent</span>
+                Mental Healthcare That&apos;s <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Actually Intelligent</span>
               </motion.h1>
               <motion.p className="text-lg leading-relaxed tracking-wide text-slate-600 dark:text-slate-300 max-w-prose" variants={fadeInLeft}>
-                Neurona is your smart co-pilot for mental wellness. We blend expert clinicians with helpful AI to deliver care that's precise, private, and finally fits *your* brain.
+                Neurona is your smart co-pilot for mental wellness. We blend expert clinicians with helpful AI to deliver care that&apos;s precise, private, and finally fits *your* brain.
               </motion.p>
               <motion.div className="flex flex-col sm:flex-row gap-4" variants={fadeInUp}>
                 <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 shadow-lg transform hover:scale-105 transition-transform">
@@ -133,7 +149,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <Animated>
             <h2 className="text-center text-4xl font-bold font-serif mb-4">The Neurona Difference</h2>
-            <p className="text-center text-lg text-slate-600 dark:text-slate-400 mb-12 max-w-3xl mx-auto">We're not just another app. We're a complete care system designed for real, lasting results.</p>
+            <p className="text-center text-lg text-slate-600 dark:text-slate-400 mb-12 max-w-3xl mx-auto">We&apos;re not just another app. We&apos;re a complete care system designed for real, lasting results.</p>
           </Animated>
           <motion.div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8" variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
             {[ { icon: Sparkles, title: "AI-Powered Precision", desc: "Our smart AI intake gets to the heart of the matter, making your sessions ultra-efficient." }, { icon: Heart, title: "Human-Led Empathy", desc: "Technology is our tool, but licensed professionals are always at the center of your care." }, { icon: ClipboardList, title: "Structured Plans", desc: "No more guessing games. Get clear, actionable therapy plans designed by your clinician." }, { icon: Shield, title: "Privacy You Control", desc: "Your data is locked down tighter than a pickle jar. Encrypted, secure, and you hold the key." } ].map((item, i) => (
@@ -206,12 +222,40 @@ export default function HomePage() {
           <div className="mt-12 max-w-xl mx-auto">
             <Card className="p-8 shadow-lg dark:bg-slate-900">
               {formState.success ? (
-                <div className="text-center">
-                  <h3 className="text-xl font-semibold text-emerald-600">Thank You! You're on the list.</h3>
-                  <p className="mt-2 text-slate-500">We'll be in touch soon. Keep an eye on your inbox!</p>
+                <div className="text-center space-y-4">
+                  <h3 className="text-xl font-semibold text-emerald-600">🎉 Welcome to Neurona!</h3>
+                  <p className="text-slate-600 dark:text-slate-300">You're officially on the list! Check your email for a welcome message.</p>
+                  {userReferralCode && (
+                    <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-lg p-4">
+                      <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-2">Your Referral Link:</p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 bg-white dark:bg-slate-800 px-3 py-2 rounded border text-sm font-mono">
+                          {typeof window !== 'undefined' ? window.location.origin : ''}?ref={userReferralCode}
+                        </code>
+                        <Button 
+                          size="sm" 
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}?ref=${userReferralCode}`)
+                            alert('Referral link copied!')
+                          }}
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                      <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-2">Share this link with friends to earn referral points!</p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <form onSubmit={handleFormSubmit} className="space-y-6">
+                  {referralCode && (
+                    <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-lg p-3 text-center">
+                      <p className="text-emerald-700 dark:text-emerald-300 text-sm">
+                        🎉 You were referred by: <strong>{referralCode}</strong>
+                      </p>
+                    </div>
+                  )}
+                  
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
                     <Input id="name" name="name" type="text" placeholder="Ada Lovelace" required value={formData.name} onChange={handleInputChange} />
@@ -220,22 +264,20 @@ export default function HomePage() {
                     <Label htmlFor="email">Email Address</Label>
                     <Input id="email" name="email" type="email" placeholder="ada@computervision.com" required value={formData.email} onChange={handleInputChange} />
                   </div>
-                  {/* --- NEW OPTIONAL PHONE FIELD --- */}
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number (Optional)</Label>
-                    <Textarea id="suggestions" name="suggestions" placeholder="Tell us what you'd love to see..." value={formData.suggestions} onChange={handleTextareaChange} />
+                    <Input id="phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" value={formData.phone} onChange={handleInputChange} />
                   </div>
-                  {/* --- NEW OPTIONAL SUGGESTIONS FIELD --- */}
                   <div className="space-y-2">
                     <Label htmlFor="suggestions">Any Suggestions? (Optional)</Label>
-                    <Textarea id="suggestions" name="suggestions" placeholder="Tell us what you'd love to see..." value={formData.suggestions} onChange={handleInputChange} />
+                    <Textarea id="suggestions" name="suggestions" placeholder="Tell us what you'd love to see..." value={formData.suggestions} onChange={handleTextareaChange} />
                   </div>
                   <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" size="lg" disabled={formState.submitting}>
                     {formState.submitting ? (
                       <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
                     ) : "Get My Invite"}
                   </Button>
-                  {formState.error && <p className="text-sm text-red-500 text-center">Something went wrong. Please try again.</p>}
+                  {formState.error && <p className="text-sm text-red-500 text-center">Oops! Something went wrong. Please check your information and try again.</p>}
                 </form>
               )}
             </Card>

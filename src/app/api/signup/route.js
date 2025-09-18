@@ -11,6 +11,7 @@ import {
   doc,
   increment
 } from 'firebase/firestore';
+import { sendWelcomeEmail } from '../../../lib/email';
 
 // Generate a unique short referral code
 function generateReferralCode() {
@@ -111,6 +112,18 @@ export async function POST(request) {
 
     // Save the user to Firestore
     const docRef = await addDoc(collection(db, 'users'), userData);
+
+    // Send welcome email (don't block the response if email fails)
+    try {
+      await sendWelcomeEmail({
+        name: userData.name,
+        email: userData.email,
+        referralCode: userData.referralCode
+      });
+    } catch (emailError) {
+      console.error('Welcome email failed (but signup succeeded):', emailError);
+      // Don't fail the signup if email fails
+    }
 
     return NextResponse.json({ 
       message: 'Signup successful',
